@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: biosim
+Version: 1.0
+Summary: A Bio Simulation
+Home-page: https://gitlab.com/nmbu.no/emner/inf200/h2021/inf200-course-materials
+Author: attr: biosim.__author__
+Author-email: attr: biosim.__email__
+License: MIT License
+Project-URL: Bug Tracker, https://gitlab.com/nmbu.no/emner/inf200/h2021/inf200-course-materials/-/issues
+Description: # BioSim A09 Vilde Nada
+        
+        Simulation for an island in our january block
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown

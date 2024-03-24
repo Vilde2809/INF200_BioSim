@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>biosim.animals &#8212; BioSim 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for biosim.animals</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>  <span class="c1"># math module to calculate equations</span>
+<span class="kn">import</span> <span class="nn">random</span>  <span class="c1"># random module to collect random numbers</span>
+
+
+<div class="viewcode-block" id="Animals"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Animals">[docs]</a><span class="k">class</span> <span class="nc">Animals</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Class Animals:</span>
+
+<span class="sd">    Superclass containing the common methods for subclasses</span>
+<span class="sd">    ========================================================</span>
+<span class="sd">    **animal aging:** animal gain age with one every cycle</span>
+
+<span class="sd">    **calc birth weight:** animal is born with a &#39;unique&#39; weight</span>
+
+<span class="sd">    **weight gain:** if an animal eat it gains weight</span>
+
+<span class="sd">    **weight loss:** yearly an animal lose a certain amount of weight</span>
+
+<span class="sd">    **calc fitness:** determines the overall fitness of an animal</span>
+
+<span class="sd">    **birth:** determines if a animal should give birth</span>
+
+<span class="sd">    **migrating:** probability for an animal to migrate</span>
+
+<span class="sd">    **death:** probability for an animal dying</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s2">&quot;is not a valid parameter for the animal&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Value for the parameter&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="s2">&quot;should be positive integer&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+<span class="sd">        -----------</span>
+<span class="sd">        Contains data for later use</span>
+
+<span class="sd">        :param age: Age of the animal</span>
+<span class="sd">        :type age: int</span>
+
+<span class="sd">        :param weight: Weight of the animal</span>
+<span class="sd">        :type weight: float</span>
+
+<span class="sd">        :raise ValueError: Age can not be negative</span>
+<span class="sd">        :raise ValueError: Weight cannot be a negative integer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">age</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">age</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">age</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Age can not be negative&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weight</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_birth_weight</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weight</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Weight cannot be a negative integer&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_fitness</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Animals.animal_aging"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Animals.animal_aging">[docs]</a>    <span class="k">def</span> <span class="nf">animal_aging</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Age increases with 1 for each cycle that passes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="Animals.calc_birth_weight"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Animals.calc_birth_weight">[docs]</a>    <span class="k">def</span> <span class="nf">calc_birth_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates weight of an animal at birth</span>
+
+<span class="sd">        **Formula for birth_weight**</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \begin{equation}</span>
+<span class="sd">            w  \sim  GaussianDistribution \times (w_{birth}, \sigma_{birth})</span>
+<span class="sd">            \end{equation}</span>
+
+<span class="sd">        :return: Calculated birth weight drawn from a gaussian distribution</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">birth_weight</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">gauss</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;w_birth&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;sigma_birth&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">birth_weight</span></div>
+
+<div class="viewcode-block" id="Animals.weight_gain"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Animals.weight_gain">[docs]</a>    <span class="k">def</span> <span class="nf">weight_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">food</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When eating, the animal gains weight</span>
+
+<span class="sd">        *Change in weight must change the fitness*</span>
+
+<span class="sd">        **Weight gain is given by the formula**</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \begin{equation}</span>
+<span class="sd">            \beta \times F</span>
+<span class="sd">            \end{equation}</span>
+
+
+<span class="sd">        :param food: the amount of fodder an animal has eaten</span>
+<span class="sd">        :type food: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;beta&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">food</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_fitness</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Animals.weight_loss"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Animals.weight_loss">[docs]</a>    <span class="k">def</span> <span class="nf">weight_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Each cycle the animal lose weight</span>
+
+<span class="sd">        **Given by formula:**</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \begin{equation}</span>
+<span class="sd">            \eta \times w</span>
+<span class="sd">            \end{equation}</span>
+
+<span class="sd">        *Change in weight must change the fitness*</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">-=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;eta&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_fitness</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Animals.calc_fitness"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Animals.calc_fitness">[docs]</a>    <span class="k">def</span> <span class="nf">calc_fitness</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fitness is the overall health of the animal</span>
+
+<span class="sd">        Fitness is zero if weight is zero, otherwise given by</span>
+
+<span class="sd">        **Calculates fitness based on age and weight**</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \begin{equation}</span>
+<span class="sd">            q^{+} (a, a_{1/2}, phi_{age}) \times q^{-} (w, w_{1/2}, phi_{weight})</span>
+<span class="sd">            \end{equation}</span>
+
+<span class="sd">        where</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \begin{equation}</span>
+<span class="sd">            q^{+-}(x, x_{1/2}, phi) = 1 / (1 + e^{{(+-)} \phi (x - x_{1/2})}</span>
+<span class="sd">            \end{equation}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">q_age</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;phi_age&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;a_half&#39;</span><span class="p">])))</span>
+        <span class="n">q_weight</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;phi_weight&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;w_half&#39;</span><span class="p">])))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">=</span> <span class="n">q_age</span> <span class="o">*</span> <span class="n">q_weight</span></div>
+
+<div class="viewcode-block" id="Animals.migrating"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Animals.migrating">[docs]</a>    <span class="k">def</span> <span class="nf">migrating</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An animal can migrate to neighbor cells with a given probability</span>
+
+<span class="sd">        **probability for migration**</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \begin{equation}</span>
+<span class="sd">            \mu \times \Phi</span>
+<span class="sd">            \end{equation}</span>
+
+<span class="sd">        :return: The probability of an animal moving from one cell to an other</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">move_probability</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span>
+        <span class="k">if</span> <span class="n">move_probability</span> <span class="o">&gt;</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Animals.birth"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Animals.birth">[docs]</a>    <span class="k">def</span> <span class="nf">birth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An animal can mate and give birth if there is more than one animal in a cell</span>
+
+<span class="sd">        There is a given probability for an animal giving birth:</span>
+
+<span class="sd">        **Calculates probability for birth**</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \begin{equation}</span>
+<span class="sd">            min(1, \gamma \times \Phi \times (n-1))</span>
+<span class="sd">            \end{equation}</span>
+
+<span class="sd">        If the weight of an animal is less than a given difference, the probability is 0:</span>
+
+<span class="sd">        **Difference**</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \begin{equation}</span>
+<span class="sd">            w &lt; \Xi \times (w_birth + \sigma_birth)</span>
+<span class="sd">            \end{equation}</span>
+
+<span class="sd">        An animal can give max one offspring per year</span>
+
+<span class="sd">        At birth the mother lose a given weight</span>
+
+<span class="sd">        *If this weight is more than her own weight there is no offspring*</span>
+
+<span class="sd">        :param n: amount animals in one cell</span>
+<span class="sd">        :type n: int</span>
+
+<span class="sd">        :return: Weight of newborn animal</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">birth_prob</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;zeta&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;w_birth&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;sigma_birth&#39;</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">birth_prob</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;gamma&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">birth_prob</span><span class="p">:</span>
+            <span class="n">wt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_birth_weight</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">wt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;xi&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">-=</span> <span class="n">wt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;xi&quot;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calc_fitness</span><span class="p">()</span>
+                <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="mi">0</span><span class="p">,</span> <span class="n">wt</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Animals.death"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Animals.death">[docs]</a>    <span class="k">def</span> <span class="nf">death</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An animal die with certainty if weight = 0</span>
+
+<span class="sd">        And with the probability:</span>
+
+<span class="sd">        **probability for death**</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \begin{equation}</span>
+<span class="sd">            \Omega \times (1 - \Phi)</span>
+<span class="sd">            \end{equation}</span>
+
+<span class="sd">        :return: if an animal must be removed from simulation because of death</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;omega&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+
+<div class="viewcode-block" id="Herbivores"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Herbivores">[docs]</a><span class="k">class</span> <span class="nc">Herbivores</span><span class="p">(</span><span class="n">Animals</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Subclass of Animals for the herbivores</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># given parameter for herbivore</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;w_birth&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">,</span>
+                  <span class="s1">&#39;sigma_birth&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+                  <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
+                  <span class="s1">&#39;eta&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+                  <span class="s1">&#39;a_half&#39;</span><span class="p">:</span> <span class="mf">40.0</span><span class="p">,</span>
+                  <span class="s1">&#39;phi_age&#39;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span>
+                  <span class="s1">&#39;w_half&#39;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+                  <span class="s1">&#39;phi_weight&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                  <span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+                  <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+                  <span class="s1">&#39;zeta&#39;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
+                  <span class="s1">&#39;xi&#39;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+                  <span class="s1">&#39;omega&#39;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+                  <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+                  <span class="s1">&#39;DeltaPhiMax&#39;</span><span class="p">:</span> <span class="kc">None</span>
+                  <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: which species</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;Herbivore&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        **Constructor**</span>
+
+<span class="sd">        :param age: Age of the herbivore</span>
+<span class="sd">        :type age: int</span>
+
+<span class="sd">        :param weight: Weight of the herbivore</span>
+<span class="sd">        :type weight: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">age</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Carnivores"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Carnivores">[docs]</a><span class="k">class</span> <span class="nc">Carnivores</span><span class="p">(</span><span class="n">Animals</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Subclass of Animals for the carnivores</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># given parameter for carnivore</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;w_birth&#39;</span><span class="p">:</span> <span class="mf">6.0</span><span class="p">,</span>
+                  <span class="s1">&#39;sigma_birth&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+                  <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="mf">0.75</span><span class="p">,</span>
+                  <span class="s1">&#39;eta&#39;</span><span class="p">:</span> <span class="mf">0.125</span><span class="p">,</span>
+                  <span class="s1">&#39;a_half&#39;</span><span class="p">:</span> <span class="mf">40.0</span><span class="p">,</span>
+                  <span class="s1">&#39;phi_age&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+                  <span class="s1">&#39;w_half&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span>
+                  <span class="s1">&#39;phi_weight&#39;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+                  <span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+                  <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+                  <span class="s1">&#39;zeta&#39;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
+                  <span class="s1">&#39;xi&#39;</span><span class="p">:</span> <span class="mf">1.1</span><span class="p">,</span>
+                  <span class="s1">&#39;omega&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+                  <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="mf">50.0</span><span class="p">,</span>
+                  <span class="s1">&#39;DeltaPhiMax&#39;</span><span class="p">:</span> <span class="mf">10.0</span>
+                  <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: which species</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;Carnivore&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        **Constructor**</span>
+
+<span class="sd">        :param age: Age of the carnivore</span>
+<span class="sd">        :type age: int</span>
+
+<span class="sd">        :param weight: Weight of the carnivore</span>
+<span class="sd">        :type weight: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">age</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Carnivores.probability_kill"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Carnivores.probability_kill">[docs]</a>    <span class="k">def</span> <span class="nf">probability_kill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fitness_herbivores</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A carnivore will kill a herbivore with a given probability</span>
+
+<span class="sd">        **Probability for a carnivore killing a herbivore**</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \begin{equation}</span>
+<span class="sd">            (\Phi_carnivore - \Phi_herbivore) / \Delta\Phi_Max</span>
+<span class="sd">            \end{equation}</span>
+
+<span class="sd">        :param fitness_herbivores: fitness of herbivore</span>
+<span class="sd">        :type fitness_herbivores: float</span>
+
+<span class="sd">        :return: Calculates the probability of a carnivore killing a herbivore.</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">&lt;=</span> <span class="n">fitness_herbivores</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">-</span> <span class="n">fitness_herbivores</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;DeltaPhiMax&quot;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">-</span> <span class="n">fitness_herbivores</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;DeltaPhiMax&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="Carnivores.killing"><a class="viewcode-back" href="../../BioSim.html#biosim.animals.Carnivores.killing">[docs]</a>    <span class="k">def</span> <span class="nf">killing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fitness_herbivores</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A random carnivore will kill a herbivore with the lowest fitness</span>
+
+<span class="sd">        :param fitness_herbivores: fitness of herbivore</span>
+<span class="sd">        :type fitness_herbivores: float</span>
+
+<span class="sd">        :return: Implements a random number to decide if a carnivore will kill a herbivore</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">random_number</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+        <span class="n">probability</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">probability_kill</span><span class="p">(</span><span class="n">fitness_herbivores</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">random_number</span> <span class="o">&lt;=</span> <span class="n">probability</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">BioSim</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../BioSim.html">The Biological Simulation Interface</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Vilde Riiber Dale, Nada Salah Mahammed.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
